@@ -1,0 +1,49 @@
+from csv import reader
+from random import random
+from math import sqrt
+import operator
+#load local csv file
+def loadDataSet(filename,split=0.5,trainingSet=[],testSet=[]):
+    with open(filename,'r') as csvfile:
+        lines=reader(csvfile)
+        dataset=list(lines)
+        for x in range(len(dataset)-1):
+            for y in range(4):
+                dataset[x][y]=float(dataset[x][y])
+            if random()<split:
+                trainingSet.append(dataset[x])
+            else:
+                testSet.append(dataset[x])
+#figure Euclid Distance
+def EuclidDist(instance1,instance2,len):
+    distance=0.0
+    for x in range(len):
+        distance +=pow((instance1[x]-instance2[x]),2)
+    return sqrt(distance)
+def getNeighbors(trainSet,testInstance,k):
+    length=len(testInstance)-1
+    distances=[(trainSet[x],EuclidDist(testInstance,trainSet[x],length)) for x in range(len(trainSet))]
+    distances.sort(key=operator.itemgetter(1))
+    neighbors=[distances[x][0] for x in range(k)]
+    return neighbors
+def getClass(neighbors):
+    classVotes={}
+    for x in range(len(neighbors)):
+        instance_class=neighbors[x][-1]
+        if instance_class in classVotes:
+            classVotes[instance_class]+=1
+        else:
+            classVotes[instance_class]=1
+    sortedVotes=sorted(classVotes.items(),key=operator.itemgetter(1),reverse=True)
+    return sortedVotes[0][0]
+def getAccuracy(testSet,predictions):
+    correct=0
+    for x in range(len(testSet)):
+        if testSet[x][-1]==predictions[x]:
+            correct+=1
+        print('实际为'+testSet[x][-1]+'预测为' + predictions[x])
+    return  (correct/float(len(testSet)))*100.0
+trainData,testData=[],[]
+loadDataSet('iris.data',0.7,trainData,testData)
+predicData=[getClass(getNeighbors(trainData, testData[x][0:-1], 18)) for x in range(len(testData))]
+print('准确率为%.3f' %getAccuracy(testData,predicData))

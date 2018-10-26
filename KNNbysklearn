@@ -1,0 +1,23 @@
+from sklearn.neighbors.classification import KNeighborsClassifier
+from csv import reader
+from random import random
+import numpy as np
+def loadDataSet(filename,split=0.5,trainingSet=[],testSet=[]):
+    with open(filename,'r') as csvfile:
+        dataset=list(reader(csvfile))
+        for x in range(len(dataset)-1):
+            for y in range(4):
+                dataset[x][y]=float(dataset[x][y])
+            if random()<split:
+                trainingSet.append(dataset[x])
+            else:
+                testSet.append(dataset[x])
+trainData,testData=[],[]
+loadDataSet('iris.data',trainingSet=trainData,testSet=testData)
+testData=np.array(testData)
+trainData=np.array(trainData)
+KNN=KNeighborsClassifier(n_neighbors=15)
+KNN.fit([trainData[x][0:-1] for x in range(len(trainData))],[trainData[x][-1] for x in range(len(trainData))])
+predictData=KNN.predict([testData[x][0:-1] for x in range(len(testData))])
+rightnum=np.sum(predictData==testData[:,-1])
+print(rightnum/float(len(testData))*100.0)
